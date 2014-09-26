@@ -24,7 +24,7 @@ class TypeResolver
      * Path to the types config file
      * @var string
      */
-    public $path = '@root/ext//yii2-elastic/src/config/types';
+    public $path = '@vendor/opus-online/yii2-elastic/src/config/types';
 
     /**
      * Cached configuration
