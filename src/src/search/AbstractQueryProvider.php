@@ -10,7 +10,6 @@ namespace opus\elastic\search;
 use Elastica\Filter\Term;
 use Elastica\Query\Bool;
 use Elastica\Query\MatchAll;
-use opus\shop\elastic\search\queryHandler\AbstractHandler;
 use yii\base\Object;
 use yii\di\ServiceLocator;
 use yii\elasticsearch\ActiveQuery;
@@ -127,7 +126,7 @@ abstract class AbstractQueryProvider extends Object
     public function setAttribute($attribute, $value)
     {
         if ($this->locator->has($attribute)) {
-            /** @var AbstractHandler $specialHandler */
+            /** @var QueryHandlerInterface $specialHandler */
             $specialHandler = $this->locator->get($attribute);
             list($this->query, $this->filter) = $specialHandler->handle([
                 'query' => $this->query,
