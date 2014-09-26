@@ -1,0 +1,13 @@
+tools:
+    php_changetracking: true
+    php_pdepend: true
+    php_cpd: true
+    php_analyzer: true
+    php_mess_detector: true
+    php_code_sniffer: true
+    php_sim: true
+    external_code_coverage:
+        timeout: 600 # Timeout in seconds.
+checks:
+    php:
+        code_rating: true
