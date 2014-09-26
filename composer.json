@@ -25,7 +25,7 @@
     },
     "autoload": {
         "psr-4": {
-            "opus\\state\\": "src"
+            "opus\\elastic\\": "src"
         }
     }
 }
