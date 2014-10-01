@@ -31,6 +31,12 @@ class ResultListWidget extends Widget
     public $resultViewPath = null;
 
     /**
+     * Custom view params
+     * @var array
+     */
+    public $params = [];
+
+    /**
      * Applies template hint to hit and renders it
      * @return null|string
      */
