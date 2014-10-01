@@ -45,7 +45,7 @@ class ResultListWidget extends Widget
         $listHtml = null;
         foreach ($this->items as $item) {
             $item->setViewPath($this->resultViewPath);
-            $listHtml .= $item->render($item->getViewFilePath());
+            $listHtml .= $item->render($item->getViewFilePath(), $this->params);
         }
         return $listHtml;
     }
