@@ -91,6 +91,12 @@ abstract class AbstractQueryProvider extends Object
     abstract public function getResultInstance();
 
     /**
+     * Returns query handlers for special cases
+     * @return array
+     */
+    abstract public function attributeHandlers();
+
+    /**
      * @param array $requestParams
      * @param array $config
      */
@@ -98,7 +104,7 @@ abstract class AbstractQueryProvider extends Object
     {
         parent::__construct($config);
         $this->locator = new ServiceLocator();
-        $this->locator->setComponents($this->handlers);
+        $this->locator->setComponents($this->attributeHandlers());
 
         $this->query = new Bool();
         $this->filter = new \Elastica\Filter\Bool();
