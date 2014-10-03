@@ -25,10 +25,9 @@ use yii\helpers\ArrayHelper;
 abstract class AbstractQueryProvider extends Object
 {
     /**
-     * List of handler classes
      * @var array
      */
-    public $handlers = [];
+    protected $aggregations = [];
     /**
      * Query instance
      *
@@ -157,18 +156,7 @@ abstract class AbstractQueryProvider extends Object
      */
     public function getQuery($multiSearch = true)
     {
-        $this->query = $this->query == new Bool()
-            ? new MatchAll() : $this->query;
-
-        $this->filter = $this->filter == new \Elastica\Filter\Bool()
-            ? new \Elastica\Filter\MatchAll() : $this->filter;
-
-        $query = $this->getModel()->find()
-            ->query($this->query)
-            ->where($this->filter)
-            ->limit(null)
-            ->offset(null)
-            ->orderBy(null);
+        $query = $this->getBaseQuery();
 
         if ($multiSearch === true) {
             $query = [
@@ -181,6 +169,9 @@ abstract class AbstractQueryProvider extends Object
             if (!is_null($this->sort)) {
                 $query['sort'] = $this->sort;
             }
+            if (!empty($this->aggregations)) {
+                $query['aggs'] = $this->aggregations;
+            }
             return $query;
         }
 
@@ -188,5 +179,36 @@ abstract class AbstractQueryProvider extends Object
             ->limit($this->limit)
             ->offset($this->offset)
             ->orderBy($this->sort);
+    }
+
+    /**
+     * Returns base query
+     * @return ActiveQuery
+     */
+    private function getBaseQuery()
+    {
+        $this->query = $this->query == new Bool()
+            ? new MatchAll() : $this->query;
+
+        $this->filter = $this->filter == new \Elastica\Filter\Bool()
+            ? new \Elastica\Filter\MatchAll() : $this->filter;
+
+        return $this->getModel()->find()
+                    ->query($this->query)
+                    ->where($this->filter)
+                    ->limit(null)
+                    ->offset(null)
+                    ->orderBy(null);
+
+    }
+
+    /**
+     * @param array $aggregations
+     * @return AbstractQueryProvider
+     */
+    public function setAggregations($aggregations)
+    {
+        $this->aggregations = $aggregations;
+        return $this;
     }
 }
