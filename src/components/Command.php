@@ -86,43 +86,48 @@ class Command extends \yii\elasticsearch\Command
 
     /**
      * getMapping with caching support
+     *
      * @param string $index
      * @param string $type
+     * @param string $data
+     * @throws \yii\base\InvalidConfigException
      * @return array
      * @see http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/indices-get-mapping.html
      */
-    public function getCachedMapping($index = '_all', $type = '_all')
+    public function getCachedMapping($index = '_all', $type = '_all', $data = 'properties')
     {
         $command = \Yii::$app->elasticsearch;
         /* @var $cache Cache */
         $cache = is_string($command->cache) ? \Yii::$app->get($command->cache, false) : $command->cache;
         if ($cache instanceof Cache) {
-            $key = sprintf('%s_%s', $index, $type);
+            $key = sprintf('%s_%s_%s', $index, $type, $data);
             if (($mapping = $cache->get($key)) === false) {
-                $mapping = $this->getMapping($index, $type);
+                $mapping = $this->getMapping($index, $type, $data);
                 if ($mapping !== null) {
                     $cache->set($key, $mapping);
                 }
             }
         }
         else {
-            $mapping = $this->getMapping($index, $type);
+            $mapping = $this->getMapping($index, $type, $data);
         }
         return $mapping;
     }
 
     /**
      * Overridden to return exact type mapping if possible
+     *
      * @param string $index
      * @param string $type
+     * @param string $data Type of data to be retrieved
      * @return array
      * @see http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/indices-get-mapping.html
      */
-    public function getMapping($index = '_all', $type = '_all')
+    public function getMapping($index = '_all', $type = '_all', $data = 'properties')
     {
         $mapping = parent::getMapping($index, $type);
         if ($index !== '_all' && $type !== '_all') {
-            $mapping = $mapping[$index]['mappings'][$type]['properties'];
+            $mapping = $mapping[$index]['mappings'][$type][$data];
         }
         return $mapping;
     }
