@@ -101,7 +101,7 @@ class Spooler extends Object
      * @param integer $limit
      * @param integer $offset
      * @param string $class
-     * @return array
+     * @return int
      */
     public static function setProcessingRows($limit, $offset, $class)
     {
@@ -122,7 +122,7 @@ class Spooler extends Object
      * Provides total count
      *
      * @param $className
-     * @return array
+     * @return int
      */
     public static function getTotalCount($className)
     {
