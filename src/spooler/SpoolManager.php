@@ -114,6 +114,7 @@ class SpoolManager extends Object
     {
         $dataProvider->initializeDependentData();
         $offset = 0;
+        Spooler::removeProcessingRows();
         while (Spooler::setProcessingRows(
                 $this->batchSize,
                 $offset,

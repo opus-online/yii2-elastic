@@ -132,4 +132,17 @@ class Spooler extends Object
             ->where(['model_class' => $className])
             ->scalar();
     }
+
+    /**
+     * Sets all rows to is_processing to 0
+     * @return int
+     * @throws Exception
+     */
+    public static function removeProcessingRows()
+    {
+        $tableName = \Yii::$app->elasticsearch->spoolerTableName;
+        return \Yii::$app->db->createCommand(
+            "UPDATE $tableName spool SET spool.is_processing = 0"
+        )->execute();
+    }
 }
