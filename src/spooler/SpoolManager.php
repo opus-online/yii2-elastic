@@ -26,13 +26,6 @@ class SpoolManager extends Object
     public $dataProviders = [];
 
     /**
-     * Used to generate correct mapping for attributes
-     *
-     * @var array
-     */
-    public $languages = [];
-
-    /**
      * Spooling data batch size
      *
      * @var int
@@ -95,7 +88,7 @@ class SpoolManager extends Object
             \Yii::$app->elasticsearch->createCommand()->setMapping(
                 $dataProvider->getIndexName(),
                 $dataProvider->getTypeName(),
-                $dataProvider->getMapping($this->languages)
+                $dataProvider->getMapping()
             );
 
             Spooler::reindexData(
@@ -124,7 +117,7 @@ class SpoolManager extends Object
                 $offset,
                 $dataProvider->getRecordClassName()
             )) > 0) {
-            $data = $dataProvider->getData($this->languages);
+            $data = $dataProvider->getData();
             \Yii::$app->elasticsearch->createCommand()->bulk(
                 $dataProvider->getIndexName(),
                 $dataProvider->getTypeName(),
