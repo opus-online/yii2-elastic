@@ -17,6 +17,11 @@ use yii\base\Object;
 abstract class AbstractDataProvider extends Object
 {
     /**
+     * @var string[][] Elastic index mapping
+     */
+    private $mapping = [];
+
+    /**
      * Provides data to spool into elastic
      *
      * @return array
@@ -53,13 +58,17 @@ abstract class AbstractDataProvider extends Object
      */
     public function getMapping(array $languages)
     {
-        /** @var AbstractMappingProvider $mappingProvider */
-        $mappingProvider = \Yii::createObject('opus\elastic\spooler\AbstractMappingProvider');
-        $attributes = $mappingProvider->build($languages);
+        if (empty($this->mapping)) {
+            /** @var AbstractMappingProvider $mappingProvider */
+            $mappingProvider = \Yii::createObject('opus\elastic\spooler\AbstractMappingProvider');
+            $attributes = $mappingProvider->build($languages);
 
-        return [
-            $this->getTypeName() => $attributes
-        ];
+            $this->mapping = [
+                $this->getTypeName() => $attributes
+            ];
+        }
+        return $this->mapping;
+
     }
 
     /**
