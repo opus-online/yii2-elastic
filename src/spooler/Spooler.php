@@ -101,7 +101,7 @@ class Spooler extends Object
      * @param integer $limit
      * @param integer $offset
      * @param string $class
-     * @return array
+     * @return int
      */
     public static function setProcessingRows($limit, $offset, $class)
     {
@@ -122,7 +122,7 @@ class Spooler extends Object
      * Provides total count
      *
      * @param $className
-     * @return array
+     * @return int
      */
     public static function getTotalCount($className)
     {
@@ -131,5 +131,18 @@ class Spooler extends Object
             ->from(\Yii::$app->elasticsearch->spoolerTableName)
             ->where(['model_class' => $className])
             ->scalar();
+    }
+
+    /**
+     * Sets all rows to is_processing to 0
+     * @return int
+     * @throws Exception
+     */
+    public static function removeProcessingRows()
+    {
+        $tableName = \Yii::$app->elasticsearch->spoolerTableName;
+        return \Yii::$app->db->createCommand(
+            "UPDATE $tableName spool SET spool.is_processing = 0"
+        )->execute();
     }
 }

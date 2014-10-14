@@ -8,6 +8,7 @@
 namespace opus\elastic\spooler;
 
 use yii\base\Object;
+use yii\helpers\Console;
 
 /**
  * Class ElasticManager
@@ -114,11 +115,15 @@ class SpoolManager extends Object
     {
         $dataProvider->initializeDependentData();
         $offset = 0;
-        while (Spooler::setProcessingRows(
+        Spooler::removeProcessingRows();
+        $count = Spooler::getTotalCount($dataProvider->getRecordClassName());
+        Console::startProgress(0, $count);
+        $processed = 0;
+        while (($progress = Spooler::setProcessingRows(
                 $this->batchSize,
                 $offset,
                 $dataProvider->getRecordClassName()
-            ) > 0) {
+            )) > 0) {
             $data = $dataProvider->getData($this->languages);
             \Yii::$app->elasticsearch->createCommand()->bulk(
                 $dataProvider->getIndexName(),
@@ -126,7 +131,10 @@ class SpoolManager extends Object
                 $data
             );
             Spooler::deleteProcessingRows();
+            $processed += $progress;
+            Console::updateProgress($processed, $count);
         }
+        Console::endProgress("Done\n");
     }
 }
 
