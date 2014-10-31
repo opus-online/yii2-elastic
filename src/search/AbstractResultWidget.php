@@ -7,8 +7,9 @@
 
 namespace opus\elastic\search;
 
+use yii\base\InvalidValueException;
+use yii\base\Model;
 use yii\base\Widget;
-use yii\elasticsearch\ActiveRecord;
 use yii\helpers\ArrayHelper;
 
 /**
@@ -20,7 +21,7 @@ use yii\helpers\ArrayHelper;
 abstract class AbstractResultWidget extends Widget
 {
     /**
-     * @var ActiveRecord|null
+     * @var Model|null
      */
     public $source = null;
 
@@ -40,7 +41,7 @@ abstract class AbstractResultWidget extends Widget
     /**
      * Active record model where source is stored
      *
-     * @return ActiveRecord
+     * @return Model
      */
     abstract protected function getModel();
 
@@ -50,7 +51,13 @@ abstract class AbstractResultWidget extends Widget
      * @param string $attribute
      * @return mixed
      */
-    abstract public function getAttribute($attribute);
+    public function getAttribute($attribute)
+    {
+        if ($this->source->canGetProperty($attribute)) {
+            return $this->source->$attribute;
+        }
+        throw new InvalidValueException('Unknown attribute: ' . $attribute);
+    }
 
     /**
      * Generates source model and sets attributes into model
@@ -65,8 +72,6 @@ abstract class AbstractResultWidget extends Widget
         $this->source = $model;
         return $this;
     }
-
-
 
     /**
      * Overridden to set view file path

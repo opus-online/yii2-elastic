@@ -76,6 +76,11 @@ abstract class AbstractQueryProvider extends Object
     protected $locator;
 
     /**
+     * @var string
+     */
+    public $resultsFormatter;
+
+    /**
      * Return the searchable data model
      *
      * @return ActiveRecord
@@ -85,7 +90,7 @@ abstract class AbstractQueryProvider extends Object
     /**
      * Returns new hit instance
      *
-     * @return Object
+     * @return AbstractResultWidget
      */
     abstract public function getResultInstance();
 
@@ -118,7 +123,6 @@ abstract class AbstractQueryProvider extends Object
         $this->setAttributes();
         $this->limit = $limit;
         $this->offset = $offset;
-
         $this->sort = $sort;
     }
     /**
@@ -133,9 +137,10 @@ abstract class AbstractQueryProvider extends Object
         if ($this->locator->has($attribute)) {
             /** @var QueryHandlerInterface $specialHandler */
             $specialHandler = $this->locator->get($attribute);
-            list($this->query, $this->filter) = $specialHandler->handle([
+            list($this->query, $this->filter, $this->aggregations) = $specialHandler->handle([
                 'query' => $this->query,
                 'filter' => $this->filter,
+                'aggregations' => $this->aggregations,
                 'value' => $value
             ]);
         } else {
@@ -216,5 +221,19 @@ abstract class AbstractQueryProvider extends Object
     {
         $this->aggregations = $aggregations;
         return $this;
+    }
+
+    /**
+     * @param array $config
+     * @throws \yii\base\InvalidConfigException
+     * @return ResultsFormatterInterface
+     */
+    public function getResultsFormatter($config = [])
+    {
+        $config = ArrayHelper::merge($config, [
+            'queryProvider' => $this,
+            'class' => $this->resultsFormatter
+        ]);
+        return \Yii::createObject($config);
     }
 }
