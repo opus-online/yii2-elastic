@@ -7,7 +7,11 @@
 
 namespace opus\elastic\components;
 
+use Elastica\Exception\ElasticsearchException;
+use yii\base\InvalidCallException;
 use yii\base\InvalidParamException;
+use yii\elasticsearch\Exception;
+use yii\helpers\ArrayHelper;
 use yii\helpers\Json;
 
 /**
@@ -20,10 +24,11 @@ class Query extends \yii\elasticsearch\Query
 {
     /**
      * Creates multi search request to elasticsearch
+     *
      * @param array $requests
      * @param null $searchType
      * @param array $options
-     * @throws \yii\base\InvalidParamException
+     * @throws Exception
      * @return mixed
      */
     public static function multiSearch(
@@ -47,6 +52,14 @@ class Query extends \yii\elasticsearch\Query
         }
         $query = implode("\n", $requestParts) . "\n";
 
-        return \Yii::$app->elasticsearch->get('_msearch', $options, $query);
+        $result = \Yii::$app->elasticsearch->get('_msearch', $options, $query);
+
+        foreach ($result['responses'] as $set) {
+            if (($error = ArrayHelper::getValue($set, 'error')) !== null) {
+                throw new Exception($error);
+            }
+        }
+
+        return $result;
     }
 }
