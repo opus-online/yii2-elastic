@@ -15,13 +15,6 @@ namespace opus\elastic\search;
 interface ResultsFormatterInterface
 {
     /**
-     * Returns new hit instance
-     *
-     * @return AbstractResultWidget
-     */
-    public function getResultInstance();
-
-    /**
      * @return AbstractResultWidget[]
      */
     public function format();
