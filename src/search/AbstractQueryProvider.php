@@ -143,12 +143,23 @@ abstract class AbstractQueryProvider extends Object
                 'aggregations' => $this->aggregations,
                 'value' => $value
             ]);
-        } else {
+        } elseif ($this->isValidAttribute($attribute)) {
             $filter = new Term(
                 [$attribute => $value]);
             $this->filter->addMust($filter);
         }
         return $this;
+    }
+
+    /**
+     * Avoids sending junk to search server
+     * @param $attribute
+     * @return bool
+     * @throws \yii\base\InvalidConfigException
+     */
+    protected function isValidAttribute($attribute)
+    {
+        return in_array($attribute, $this->getModel()->attributes());
     }
 
     /**
