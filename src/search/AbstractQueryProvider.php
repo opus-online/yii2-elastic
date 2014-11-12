@@ -88,13 +88,6 @@ abstract class AbstractQueryProvider extends Object
     abstract public function getModel();
 
     /**
-     * Returns new hit instance
-     *
-     * @return AbstractResultWidget
-     */
-    abstract public function getResultInstance();
-
-    /**
      * Returns query handlers for special cases
      * @return array
      */
@@ -246,5 +239,14 @@ abstract class AbstractQueryProvider extends Object
             'class' => $this->resultsFormatter
         ]);
         return \Yii::createObject($config);
+    }
+
+    /**
+     * Returns user search keywords
+     * @return array
+     */
+    public function getSearchKeywords()
+    {
+        return $this->requestParams;
     }
 }

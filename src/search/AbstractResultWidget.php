@@ -32,6 +32,12 @@ abstract class AbstractResultWidget extends Widget
     public $resultId;
 
     /**
+     * User search params
+     * @var string
+     */
+    public $searchParams;
+
+    /**
      * View path
      *
      * @var string
@@ -49,6 +55,7 @@ abstract class AbstractResultWidget extends Widget
      * Returns source attribute
      *
      * @param string $attribute
+     * @throws InvalidValueException
      * @return mixed
      */
     public function getAttribute($attribute)
