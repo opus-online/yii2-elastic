@@ -7,8 +7,6 @@
 
 namespace opus\elastic\components;
 
-use Elastica\Exception\ElasticsearchException;
-use yii\base\InvalidCallException;
 use yii\base\InvalidParamException;
 use yii\elasticsearch\Exception;
 use yii\helpers\ArrayHelper;
@@ -19,9 +17,22 @@ use yii\helpers\Json;
  *
  * @author Mihkel Viilveer <mihkel@opus.ee>
  * @package opus\elastic\components
+ * @property \opus\elastic\elastica\filter\Bool $filter
  */
 class Query extends \yii\elasticsearch\Query
 {
+    /**
+     * @var array|string|\opus\elastic\elastica\filter\Bool The filter part of this search query. This is an array or json string that follows the format of
+     * the elasticsearch [Query DSL](http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/query-dsl.html).
+     */
+    public $filter;
+
+    /**
+     * @var array|string|\Elastica\Query\Bool The query part of this search query. This is an array or json string that follows the format of
+     * the elasticsearch [Query DSL](http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/query-dsl.html).
+     */
+    public $query;
+
     /**
      * Creates multi search request to elasticsearch
      *

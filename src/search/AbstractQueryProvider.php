@@ -10,6 +10,8 @@ namespace opus\elastic\search;
 use Elastica\Filter\Term;
 use Elastica\Query\Bool;
 use Elastica\Query\MatchAll;
+use opus\elastic\components\Query;
+use opus\elastic\components\QueryBuilder;
 use yii\base\Object;
 use yii\di\ServiceLocator;
 use yii\elasticsearch\ActiveQuery;
@@ -17,7 +19,7 @@ use yii\elasticsearch\ActiveRecord;
 use yii\helpers\ArrayHelper;
 
 /**
- * Class AbstractDataProvider
+ * Class AbstractQueryProvider
  *
  * @author Mihkel Viilveer <mihkel@opus.ee>
  * @package opus\elastic\search
@@ -25,57 +27,31 @@ use yii\helpers\ArrayHelper;
 abstract class AbstractQueryProvider extends Object
 {
     /**
-     * @var array
-     */
-    protected $aggregations = [];
-    /**
-     * Query instance
-     *
-     * @var \Elastica\Query\Bool
-     */
-    protected $query;
-
-    /**
-     * Filter instance
-     *
-     * @var \Elastica\Filter\Bool
-     */
-    protected $filter;
-
-    /**
-     * Search query order
-     *
-     * @var array
-     */
-    public $sort = [];
-
-    /**
-     * Search query offset
-     *
-     * @var null
-     */
-    public $offset = null;
-
-    /**
-     * Search query limit
-     *
-     * @var null
-     */
-    public $limit = null;
-
-    /**
-     * Initial request params
-     *
-     * @var array
+     * Initial request params, that contains all the parameters in filter/query part
+     * @var mixed[]
      */
     protected $requestParams = [];
 
     /**
+     * Query instance
+     * @var Query
+     */
+    protected $query;
+
+    /**
+     * QueryBuilder instance to handle yii default syntax eg ['not' => ['id' => 'test']]
+     * @var QueryBuilder
+     */
+    private $queryBuilder;
+
+    /**
+     * This service locator holds all attribute handlers
      * @var ServiceLocator
      */
     protected $locator;
 
     /**
+     * Class instance for formatting results after successful request to elasticsearch
      * @var string
      */
     public $resultsFormatter;
@@ -100,23 +76,23 @@ abstract class AbstractQueryProvider extends Object
     public function __construct($requestParams = [], $config = [])
     {
         parent::__construct($config);
+
+        $this->queryBuilder = \Yii::createObject(QueryBuilder::class, [null]);
+
         $this->locator = new ServiceLocator();
         $this->locator->setComponents($this->attributeHandlers());
 
-        $this->query = new Bool();
-        $this->filter = new \Elastica\Filter\Bool();
+        $query = $this->getQueryInstance();
+        $query->query = new Bool();
+        $query->filter = new \opus\elastic\elastica\filter\Bool();
 
-        $limit = ArrayHelper::getValue($requestParams, 'limit');
-        $offset = ArrayHelper::getValue($requestParams, 'offset');
-        $sort = ArrayHelper::getValue($requestParams, 'sort');
+        $query->limit = ArrayHelper::remove($requestParams, 'limit');
+        $query->offset = ArrayHelper::remove($requestParams, 'offset');
+        $query->orderBy = ArrayHelper::remove($requestParams, 'sort');
 
-        unset($requestParams['limit'], $requestParams['offset'], $requestParams['sort']);
         $this->requestParams = $requestParams;
 
         $this->setAttributes();
-        $this->limit = $limit;
-        $this->offset = $offset;
-        $this->sort = $sort;
     }
     /**
      * This method is used to add conditions to query
@@ -127,19 +103,20 @@ abstract class AbstractQueryProvider extends Object
      */
     public function setAttribute($attribute, $value)
     {
+        $query = $this->getQueryInstance();
         if ($this->locator->has($attribute)) {
             /** @var QueryHandlerInterface $specialHandler */
             $specialHandler = $this->locator->get($attribute);
-            list($this->query, $this->filter, $this->aggregations) = $specialHandler->handle([
-                'query' => $this->query,
-                'filter' => $this->filter,
-                'aggregations' => $this->aggregations,
+            list($query->query, $query->filter, $query->aggregations) = $specialHandler->handle([
+                'query' => $query->query,
+                'filter' => $query->filter,
+                'aggregations' => $query->aggregations,
                 'value' => $value
             ]);
         } elseif ($this->isValidAttribute($attribute)) {
             $filter = new Term(
                 [$attribute => $value]);
-            $this->filter->addMust($filter);
+            $query->filter->addMust($filter);
         }
         return $this;
     }
@@ -160,8 +137,13 @@ abstract class AbstractQueryProvider extends Object
      */
     protected function setAttributes()
     {
-        foreach ($this->requestParams as $field => $value) {
-            $this->setAttribute($field, $value);
+        foreach ($this->requestParams as $field => $condition) {
+            if (is_numeric($field) && is_array($condition)) {
+                $builtCondition = $this->queryBuilder->buildCondition($condition);
+                $this->getQueryInstance()->filter->addMust([$builtCondition]);
+            } else {
+                $this->setAttribute($field, $condition);
+            }
         }
     }
 
@@ -171,29 +153,30 @@ abstract class AbstractQueryProvider extends Object
      */
     public function getQuery($multiSearch = true)
     {
-        $query = $this->getBaseQuery();
+        $query = $this->getQueryInstance();
+        $activeQuery = $this->getBaseQuery();
 
         if ($multiSearch === true) {
-            $query = [
+            $activeQuery = [
                 'query' => [
-                    'filtered' => $query->createCommand()->queryParts,
+                    'filtered' => $activeQuery->createCommand()->queryParts,
                 ],
-                'from' => $this->offset,
-                'size' => $this->limit,
+                'from' => $query->offset,
+                'size' => $query->limit,
             ];
-            if (!is_null($this->sort)) {
-                $query['sort'] = $this->sort;
+            if (!is_null($query->orderBy)) {
+                $activeQuery['sort'] = $this->getQueryInstance()->orderBy;
             }
-            if (!empty($this->aggregations)) {
-                $query['aggs'] = $this->aggregations;
+            if (!empty($query->aggregations)) {
+                $activeQuery['aggs'] = $this->getQueryInstance()->aggregations;
             }
-            return $query;
+            return $activeQuery;
         }
 
-        return $query
-            ->limit($this->limit)
-            ->offset($this->offset)
-            ->orderBy($this->sort);
+        return $activeQuery
+            ->limit($query->limit)
+            ->offset($query->offset)
+            ->orderBy($query->orderBy);
     }
 
     /**
@@ -202,15 +185,18 @@ abstract class AbstractQueryProvider extends Object
      */
     private function getBaseQuery()
     {
-        $this->query = $this->query == new Bool()
-            ? new MatchAll() : $this->query;
+        $query = $this->getQueryInstance();
 
-        $this->filter = $this->filter == new \Elastica\Filter\Bool()
-            ? new \Elastica\Filter\MatchAll() : $this->filter;
+        $query->query = $query->query == new Bool()
+            ? new MatchAll() : $query->query;
 
-        return $this->getModel()->find()
-                    ->query($this->query)
-                    ->where($this->filter)
+        $query->filter = $query->filter == new \Elastica\Filter\Bool()
+            ? new \Elastica\Filter\MatchAll() : $query->filter;
+
+        return $this->getModel()
+                    ->find()
+                    ->query($query->query)
+                    ->where($query->filter)
                     ->limit(null)
                     ->offset(null)
                     ->orderBy(null);
@@ -223,7 +209,7 @@ abstract class AbstractQueryProvider extends Object
      */
     public function setAggregations($aggregations)
     {
-        $this->aggregations = $aggregations;
+        $this->query->aggregations = $aggregations;
         return $this;
     }
 
@@ -248,5 +234,16 @@ abstract class AbstractQueryProvider extends Object
     public function getSearchKeywords()
     {
         return $this->requestParams;
+    }
+
+    /**
+     * @return Query
+     */
+    public function getQueryInstance()
+    {
+        if (is_null($this->query)) {
+            $this->query = \Yii::createObject(Query::class);
+        }
+        return $this->query;
     }
 }
