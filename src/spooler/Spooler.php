@@ -66,8 +66,8 @@ class Spooler extends Object
 
             $sql =
                 "INSERT INTO $tableName
-              ([[model_class]], [[record_id]], [[action_code]])
-            SELECT :modelName, [[id]], 'INDEX' FROM $modelTable";
+              ([[model_class]], [[record_id]], [[action_code]], [[is_processing]])
+            SELECT :modelName, [[id]], 'INDEX', 0 FROM $modelTable";
 
             $rows = \Yii::$app->db
                 ->createCommand($sql, [':modelName' => $modelName])

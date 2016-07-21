@@ -17,6 +17,17 @@ use yii\base\Object;
 abstract class AbstractDataProvider extends Object
 {
     /**
+     * Languages
+     * @var array
+     */
+    public $languages = [];
+
+    /**
+     * @var string[][] Elastic index mapping
+     */
+    private $mapping = [];
+
+    /**
      * Provides data to spool into elastic
      *
      * @return array
@@ -48,18 +59,21 @@ abstract class AbstractDataProvider extends Object
     abstract function getRecordClassTableName();
 
     /**
-     * @param array $languages
      * @return array
      */
-    public function getMapping(array $languages)
+    public function getMapping()
     {
-        /** @var AbstractMappingProvider $mappingProvider */
-        $mappingProvider = \Yii::createObject('opus\elastic\spooler\AbstractMappingProvider');
-        $attributes = $mappingProvider->build($languages);
+        if (empty($this->mapping)) {
+            /** @var AbstractMappingProvider $mappingProvider */
+            $mappingProvider = \Yii::createObject('opus\elastic\spooler\AbstractMappingProvider');
+            $attributes = $mappingProvider->build($this->languages);
 
-        return [
-            $this->getTypeName() => $attributes
-        ];
+            $this->mapping = [
+                $this->getTypeName() => $attributes
+            ];
+        }
+        return $this->mapping;
+
     }
 
     /**

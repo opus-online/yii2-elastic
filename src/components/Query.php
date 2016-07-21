@@ -8,6 +8,8 @@
 namespace opus\elastic\components;
 
 use yii\base\InvalidParamException;
+use yii\elasticsearch\Exception;
+use yii\helpers\ArrayHelper;
 use yii\helpers\Json;
 
 /**
@@ -15,15 +17,29 @@ use yii\helpers\Json;
  *
  * @author Mihkel Viilveer <mihkel@opus.ee>
  * @package opus\elastic\components
+ * @property \opus\elastic\elastica\filter\Bool $filter
  */
 class Query extends \yii\elasticsearch\Query
 {
     /**
+     * @var array|string|\opus\elastic\elastica\filter\Bool The filter part of this search query. This is an array or json string that follows the format of
+     * the elasticsearch [Query DSL](http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/query-dsl.html).
+     */
+    public $filter;
+
+    /**
+     * @var array|string|\Elastica\Query\Bool The query part of this search query. This is an array or json string that follows the format of
+     * the elasticsearch [Query DSL](http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/query-dsl.html).
+     */
+    public $query;
+
+    /**
      * Creates multi search request to elasticsearch
+     *
      * @param array $requests
      * @param null $searchType
      * @param array $options
-     * @throws \yii\base\InvalidParamException
+     * @throws Exception
      * @return mixed
      */
     public static function multiSearch(
@@ -47,6 +63,14 @@ class Query extends \yii\elasticsearch\Query
         }
         $query = implode("\n", $requestParts) . "\n";
 
-        return \Yii::$app->elasticsearch->get('_msearch', $options, $query);
+        $result = \Yii::$app->elasticsearch->get('_msearch', $options, $query);
+
+        foreach ($result['responses'] as $set) {
+            if (($error = ArrayHelper::getValue($set, 'error')) !== null) {
+                throw new Exception($error);
+            }
+        }
+
+        return $result;
     }
 }
