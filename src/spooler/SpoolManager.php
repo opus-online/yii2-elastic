@@ -7,7 +7,7 @@
 
 namespace opus\elastic\spooler;
 
-use yii\base\Object;
+use yii\base\BaseObject;
 use yii\helpers\Console;
 
 /**
@@ -16,7 +16,7 @@ use yii\helpers\Console;
  * @author Mihkel Viilveer <mihkel@opus.ee>
  * @package opus\elastic
  */
-class SpoolManager extends Object
+class SpoolManager extends BaseObject
 {
     /**
      * DataProvider classes which hold info for inserting data to elastic
