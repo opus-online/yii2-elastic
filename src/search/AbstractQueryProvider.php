@@ -160,7 +160,7 @@ abstract class AbstractQueryProvider extends BaseObject
                 'query' => [
                     'bool' => [
                         'must' => $activeQuery->createCommand()->queryParts['query'],
-                        'filter' => $activeQuery->createCommand()->queryParts['filter'] ?: null
+                        'filter' => isset($activeQuery->createCommand()->queryParts['filter']) ?: null
                     ],
                 ],
                 'from' => $query->offset,
