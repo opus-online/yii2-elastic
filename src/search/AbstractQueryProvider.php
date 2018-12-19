@@ -85,9 +85,8 @@ abstract class AbstractQueryProvider extends BaseObject
         $query = $this->getQueryInstance();
         $query->query = new BoolQuery();
         $query->filter = new \opus\elastic\elastica\filter\BoolQuery();
-        
-        $query->limit = ArrayHelper::remove($requestParams, 'limit');
-        $query->offset = ArrayHelper::remove($requestParams, 'offset');
+        $query->limit = ArrayHelper::remove($requestParams, 'limit', 0);
+        $query->offset = ArrayHelper::remove($requestParams, 'offset', 0);
         $query->orderBy = ArrayHelper::remove($requestParams, 'sort');
 
         $this->requestParams = $requestParams;
@@ -161,7 +160,7 @@ abstract class AbstractQueryProvider extends BaseObject
                 'query' => [
                     'bool' => [
                         'must' => $activeQuery->createCommand()->queryParts['query'],
-                        'filter' => $activeQuery->createCommand()->queryParts['filter']
+                        'filter' => $activeQuery->createCommand()->queryParts['filter'] ?: null
                     ],
                 ],
                 'from' => $query->offset,
