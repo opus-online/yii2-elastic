@@ -8,11 +8,11 @@
 namespace opus\elastic\search;
 
 use Elastica\Filter\Term;
-use Elastica\Query\Bool;
+use Elastica\Query\BoolQuery;
 use Elastica\Query\MatchAll;
 use opus\elastic\components\Query;
 use opus\elastic\components\QueryBuilder;
-use yii\base\Object;
+use yii\base\BaseObject;
 use yii\di\ServiceLocator;
 use yii\elasticsearch\ActiveQuery;
 use yii\elasticsearch\ActiveRecord;
@@ -24,7 +24,7 @@ use yii\helpers\ArrayHelper;
  * @author Mihkel Viilveer <mihkel@opus.ee>
  * @package opus\elastic\search
  */
-abstract class AbstractQueryProvider extends Object
+abstract class AbstractQueryProvider extends BaseObject
 {
     /**
      * Initial request params, that contains all the parameters in filter/query part
@@ -83,11 +83,10 @@ abstract class AbstractQueryProvider extends Object
         $this->locator->setComponents($this->attributeHandlers());
 
         $query = $this->getQueryInstance();
-        $query->query = new Bool();
-        $query->filter = new \opus\elastic\elastica\filter\Bool();
-
-        $query->limit = ArrayHelper::remove($requestParams, 'limit');
-        $query->offset = ArrayHelper::remove($requestParams, 'offset');
+        $query->query = new BoolQuery();
+        $query->filter = new \opus\elastic\elastica\filter\BoolQuery();
+        $query->limit = ArrayHelper::remove($requestParams, 'limit', 0);
+        $query->offset = ArrayHelper::remove($requestParams, 'offset', 0);
         $query->orderBy = ArrayHelper::remove($requestParams, 'sort');
 
         $this->requestParams = $requestParams;
@@ -159,7 +158,10 @@ abstract class AbstractQueryProvider extends Object
         if ($multiSearch === true) {
             $activeQuery = [
                 'query' => [
-                    'filtered' => $activeQuery->createCommand()->queryParts,
+                    'bool' => [
+                        'must' => $activeQuery->createCommand()->queryParts['query'],
+                        'filter' => isset($activeQuery->createCommand()->queryParts['filter']) ?: null
+                    ],
                 ],
                 'from' => $query->offset,
                 'size' => $query->limit,
@@ -187,10 +189,10 @@ abstract class AbstractQueryProvider extends Object
     {
         $query = $this->getQueryInstance();
 
-        $query->query = $query->query == new Bool()
+        $query->query = $query->query == new BoolQuery()
             ? new MatchAll() : $query->query;
 
-        $query->filter = $query->filter == new \Elastica\Filter\Bool()
+        $query->filter = $query->filter == new \Elastica\Query\BoolQuery
             ? new \Elastica\Filter\MatchAll() : $query->filter;
 
         return $this->getModel()

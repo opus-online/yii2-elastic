@@ -16,7 +16,7 @@ use Elastica\Filter\AbstractFilter;
  * @author Mihkel Viilveer <mihkel@opus.ee>
  * @package opus\elastic\elastica\filter
  */
-class Bool extends \Elastica\Filter\Bool
+class BoolQuery extends \Elastica\Query\BoolQuery
 {
     /**
      * Adds general filter based on type

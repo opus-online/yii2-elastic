@@ -12,22 +12,16 @@ return [
         'type' => 'integer',
     ],
     ElasticFieldType::STRING => [
-        'type' => 'string',
-        'index' => 'not_analyzed'
+        'type' => 'keyword',
     ],
     ElasticFieldType::ANALYZED_STRING => [
-        'type' => 'string',
-        'index' => 'analyzed',
-        'analyzer' => 'standard',
+        'type' => 'text',
     ],
     ElasticFieldType::ANALYZED_STRING_WITH_RAW => [
-        'type' => 'string',
-        'index' => 'analyzed',
-        'analyzer' => 'standard',
+        'type' => 'text',
         'fields' => [
             'raw' => [
-                'type' => 'string',
-                'index' => 'not_analyzed'
+                'type' => 'keyword',
             ]
         ]
     ],

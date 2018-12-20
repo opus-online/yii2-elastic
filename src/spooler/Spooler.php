@@ -8,7 +8,7 @@
 
 namespace opus\elastic\spooler;
 
-use yii\base\Object;
+use yii\base\BaseObject;
 use yii\db\Exception;
 use yii\db\Query;
 
@@ -19,7 +19,7 @@ use yii\db\Query;
  *
  * @package opus\elastic
  */
-class Spooler extends Object
+class Spooler extends BaseObject
 {
     public static $tableName = 'ym_elastic_spool_item';
 
