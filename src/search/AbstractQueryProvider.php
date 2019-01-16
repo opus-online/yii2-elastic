@@ -158,9 +158,7 @@ abstract class AbstractQueryProvider extends Object
 
         if ($multiSearch === true) {
             $activeQuery = [
-                'query' => [
-                    'filtered' => $activeQuery->createCommand()->queryParts,
-                ],
+                'query' => $activeQuery->query->toArray(),
                 'from' => $query->offset,
                 'size' => $query->limit,
             ];
