@@ -7,14 +7,14 @@
 
 namespace opus\elastic\spooler;
 
-use yii\base\Object;
+use yii\base\BaseObject;
 
 /**
  * Interface DataProviderAbstract
  *
  * @package opus\elastic
  */
-abstract class AbstractDataProvider extends Object
+abstract class AbstractDataProvider extends BaseObject
 {
     /**
      * Languages

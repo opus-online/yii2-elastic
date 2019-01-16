@@ -13,7 +13,7 @@ namespace opus\elastic\enum;
 class ElasticFieldType
 {
     const INTEGER = 'integer';
-    const STRING = 'string';
+    const STRING = 'keyword';
     const ANALYZED_STRING = 'analyzed_string';
     const ANALYZED_STRING_WITH_RAW = 'analyzed_string_with_raw';
     const OBJECT = 'object';

@@ -17,12 +17,12 @@ use yii\helpers\Json;
  *
  * @author Mihkel Viilveer <mihkel@opus.ee>
  * @package opus\elastic\components
- * @property \opus\elastic\elastica\filter\Bool $filter
+ * @property \opus\elastic\elastica\filter\BoolQuery $filter
  */
 class Query extends \yii\elasticsearch\Query
 {
     /**
-     * @var array|string|\opus\elastic\elastica\filter\Bool The filter part of this search query. This is an array or json string that follows the format of
+     * @var array|string|\opus\elastic\elastica\filter\BoolQuery The filter part of this search query. This is an array or json string that follows the format of
      * the elasticsearch [Query DSL](http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/query-dsl.html).
      */
     public $filter;

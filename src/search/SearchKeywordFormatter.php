@@ -7,7 +7,7 @@
 
 namespace opus\elastic\search;
 
-use yii\base\Object;
+use yii\base\BaseObject;
 
 /**
  * This class prepares search keywords for elastic query
@@ -16,7 +16,7 @@ use yii\base\Object;
  * @author Mihkel Viilveer <mihkel@opus.ee>
  * @package opus\elastic\search
  */
-class SearchKeywordFormatter extends Object
+class SearchKeywordFormatter extends BaseObject
 {
     /**
      * Wildcard definition

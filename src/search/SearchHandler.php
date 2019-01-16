@@ -9,7 +9,7 @@ namespace opus\elastic\search;
 
 use opus\elastic\components\Query;
 use yii\base\ErrorException;
-use yii\base\Object;
+use yii\base\BaseObject;
 
 /**
  * Class SearchHandler
@@ -21,7 +21,7 @@ use yii\base\Object;
  * @author Mihkel Viilveer <mihkel@opus.ee>
  * @package opus\elastic\search
  */
-class SearchHandler extends Object
+class SearchHandler extends BaseObject
 {
     /**
      * @var AbstractQueryProvider[]
@@ -58,7 +58,7 @@ class SearchHandler extends Object
     public function getCount()
     {
         $preparedQueries = $this->prepareQueryProviders();
-        $result = (new Query())->multiSearch($preparedQueries, 'count');
+        $result = (new Query())->multiSearch($preparedQueries);
         $count = 0;
         foreach ($result['responses'] as $response) {
 
